@@ -28,6 +28,9 @@ public class JPAMappingTest {
 	
 	@Resource
 	private CourseRepository courseRepo;
+	
+	@Resource
+	private TextbookRepository textbookRepo;
 
 	@Test
 	public void shouldSaveAndLoadTopic() {
@@ -41,7 +44,7 @@ public class JPAMappingTest {
 		// CrudRepository Yay!
 		// so many new toys
 		Optional<Topic> result = topicRepo.findById(topicId);
-		result.get();
+		topic = result.get();
 		assertThat(topic.getName(), is("topic"));
 	}
 	@Test
@@ -65,7 +68,7 @@ public class JPAMappingTest {
 		entityManager.clear();
 		
 		Optional<Course> result = courseRepo.findById(courseId);
-		result.get();
+		course = result.get();
 		assertThat(course.getName(), is("course name"));
 	}
 	
@@ -101,6 +104,45 @@ public class JPAMappingTest {
 		Collection<Course> coursesForTopic = courseRepo.findByTopicsContains(java);
 		
 		assertThat(coursesForTopic, containsInAnyOrder(ooLanguages, advancedJava));	
+	}
+	
+	@Test
+	public void shouldFindCoursesForTopicId() {
+		Topic ruby = topicRepo.save(new Topic("Ruby"));
+		Topic java = topicRepo.save(new Topic("Java"));
+		long topicId = ruby.getId();
+		
+		Course ooLanguages = courseRepo.save(new Course("OO languages", "desc", ruby, java));
+		Course advancedRuby = courseRepo.save(new Course("adv Ruby", "desc", ruby));
+		
+		entityManager.flush();
+		entityManager.clear();
+		
+		Collection<Course> coursesForTopicId = courseRepo.findByTopicsId(topicId);
+		
+		assertThat(coursesForTopicId, containsInAnyOrder(ooLanguages, advancedRuby));
+	}
+	
+	@Test
+	public void shouldEstablishTextBookToCourseRelationship() {
+		Course course = new Course("name", "description");
+		courseRepo.save(course);
+		long courseId = course.getId();
+		
+		Textbook book = new Textbook("title", course);
+		textbookRepo.save(book);
+		
+		Textbook book2 = new Textbook("title2", course);
+		textbookRepo.save(book2);
+		
+		entityManager.flush();
+		entityManager.clear();
+		
+		Optional<Course> result = courseRepo.findById(courseId);
+		course = result.get();
+		
+		assertThat(course.getTextbooks(), containsInAnyOrder(book, book2));
+		
 	}
 	
 	

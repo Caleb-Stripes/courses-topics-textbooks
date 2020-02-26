@@ -22,6 +22,9 @@ public class Course {
 	@ManyToMany
 	private Collection<Topic> topics;
 	
+	@ManyToMany (mappedBy = "course")
+	private Collection<Textbook> textbooks;
+	
 	public Course() {
 		
 	}
@@ -69,6 +72,10 @@ public class Course {
 		if (id != other.id)
 			return false;
 		return true;
+	}
+
+	public Collection<Textbook> getTextbooks() {
+		return textbooks;
 	}
 
 }
